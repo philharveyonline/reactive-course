@@ -21,13 +21,19 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     }
   
   
+  property("deleteMin of heap containing one item returns empty heap") =
+    forAll { a: Int =>
+      isEmpty(deleteMin(insert(a, empty)))
+    }
+  
+  
   property("after inserting the existing minimum item, findMin returns that item") =
     forAll { (h: H) =>
       val m = if(isEmpty(h)) 0 else findMin(h)
       findMin(insert(m, h)) == m
     }
   
-  
+
   property("after inserting two items into an empty heap, findMin should return the smallest of the two items") =
     forAll { (x: Int, y: Int) =>
       val heapWithX = insert(x, empty)
@@ -42,6 +48,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
       isEmpty(deleteMin(insert(x, empty)))
   }
 
+  
   private def recursivelyCheckThatMinIncreases(previousMin: Int, h: H): Boolean =
   {
     if (isEmpty(h)) {
@@ -65,6 +72,61 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     }
   
   
+  property("melding two empty heaps returns an empty heap") = isEmpty(meld(empty, empty))
+
+  
+  property("melding the min and the deleteMin yields the original min") =
+    forAll { (h: H) =>
+      val m = findMin(h)
+      val rest = deleteMin(h)
+      val singleton = insert(m, empty)
+      m == findMin(meld(rest, singleton))
+    }
+  
+  
+  
+  property("melding with an empty heap leaves minimum unchanged") =
+    forAll { (h: H) =>
+      val meldLeft = meld(h, empty)
+      val meldRight = meld(empty, h)
+      val m = findMin(h)
+      m == findMin(meldLeft) && m == findMin(meldRight) 
+  }
+  
+  
+  property("melding an empty heap with another leaves minimum unchanged") =
+    forAll { (h: H) =>
+      findMin(h) == findMin(meld(empty, h))
+  }
+  
+ 
+  private def size(h: H): Int = {
+    def sizeRecursive(count: Int, h: H): Int = {
+      if(isEmpty(h)) {
+        count
+      }
+      else {
+        sizeRecursive(count + 1, deleteMin(h))
+      }
+    }
+    sizeRecursive(0, h)
+  }
+  
+  property("melding two heaps gives a heap of the correct size") =
+    forAll { (h1: H, h2: H) =>
+      size(h1) + size(h2) == size(meld(h1, h2))
+    }
+  
+  property("inserting into a  heap increments its size") =
+    forAll { (h: H, x: Int) =>
+      size(insert(x, h)) == size(h) + 1
+    }
+  
+  
+  property("deleting from a  heap decrements its size") =
+    forAll { (h: H) =>
+      size(deleteMin(h)) == size(h) - 1
+    }
   
   lazy val genHeap: Gen[H] = for {
     x <- arbitrary[Int]

@@ -9,9 +9,6 @@ import Prop._
 
 abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
-  // TODO style check
-  // TODO remove comments etc
-
 
   property("findMin of heap containing one item returns that item") =
     forAll { a: Int =>

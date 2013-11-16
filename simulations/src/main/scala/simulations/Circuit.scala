@@ -7,7 +7,7 @@ class Wire {
   private var actions: List[Simulator#Action] = List()
 
   def getSignal: Boolean = sigVal
-  
+
   def setSignal(s: Boolean) {
     if (s != sigVal) {
       sigVal = s
@@ -67,7 +67,7 @@ abstract class CircuitSimulator extends Simulator {
     a1 addAction orAction
     a2 addAction orAction
   }
-  
+
   def orGate2(a1: Wire, a2: Wire, output: Wire) {
 	  val notA1, notA2, notOutput = new Wire
 	  inverter(a1, notA1)
@@ -76,8 +76,37 @@ abstract class CircuitSimulator extends Simulator {
 	  inverter(notOutput, output)
   }
 
+
+
+  /**
+   * A demux with n controls is composed of the following side by side:
+   *
+   * First half outputs:     A smaller demux whose input    is: AND(I, NOT(cn))
+   *
+   * Second half of outputs: A smaller demux whose controls are AND'ed with cn
+   */
   def demux(in: Wire, c: List[Wire], out: List[Wire]) {
-    ???
+    def straightThroughAction() {
+      afterDelay(0) { out(0).setSignal(in.getSignal) }
+    }
+
+    c match {
+      case Nil => in addAction(straightThroughAction)
+      case highControl :: rest => {
+
+        val (highOut, lowOut) = out splitAt(c.size)
+        val notHighControl, lowIn, highIn = new Wire
+
+        // demux for low output bits
+        inverter(highControl, notHighControl)
+        andGate(notHighControl, in, lowIn)
+        demux(lowIn, rest, lowOut)
+
+        // demux for high output bits
+        andGate(in, highControl, highIn)
+        demux(highIn, rest, highOut)
+      }
+    }
   }
 
 }

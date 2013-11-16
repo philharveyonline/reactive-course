@@ -85,10 +85,9 @@ class CircuitSuite extends CircuitSimulator with FunSuite {
     run
     assert(out.getSignal === false, "0 demux [] == 0")
     
-    // TODO check what correct behaviour is
     in.setSignal(true)
     run
-    assert(out.getSignal === false, "0 demux [] == 1")
+    assert(out.getSignal === true, "1 demux [] == 1")
   }
   
   private def toSignals(outs: List[Wire]): List[Int] = outs map(out => if(out.getSignal) 1 else 0)
@@ -106,7 +105,7 @@ class CircuitSuite extends CircuitSimulator with FunSuite {
     in.setSignal(true)
     c0.setSignal(false)
     run
-    assert(toSignals(outs) === List(0, 1), "1 demux (0) = (1, 0)")
+    assert(toSignals(outs) === List(0, 1), "1 demux (0) = (0, 1)")
     
     in.setSignal(true)
     c0.setSignal(true)
@@ -125,30 +124,30 @@ class CircuitSuite extends CircuitSimulator with FunSuite {
     in.setSignal(false)
     c0.setSignal(true)
     run
-    assert(toSignals(outs) === List(0, 0), "0 demux (0, 1) = (0, 0, 0, 0)")
+    assert(toSignals(outs) === List(0, 0, 0, 0), "0 demux (0, 1) = (0, 0, 0, 0)")
         
     in.setSignal(true)
     c0.setSignal(false)
     c1.setSignal(false)
     run
-    assert(toSignals(outs) === List(0, 1),  "1 demux (0, 0) = (0, 0, 0, 1)")
+    assert(toSignals(outs) === List(0, 0, 0, 1),  "1 demux (0, 0) = (0, 0, 0, 1)")
+    
+    in.setSignal(true)
+    c0.setSignal(true)
+    c1.setSignal(false)
+    run
+    assert(toSignals(outs) === List(0, 0, 1, 0),  "1 demux (0, 1) = (0, 0, 1, 0)")
     
     in.setSignal(true)
     c0.setSignal(false)
     c1.setSignal(true)
     run
-    assert(toSignals(outs) === List(1, 0),  "1 demux (0, 1) = (0, 0, 1, 0)")
-    
-    in.setSignal(true)
-    c0.setSignal(false)
-    c1.setSignal(true)
-    run
-    assert(toSignals(outs) === List(1, 0),  "1 demux (1, 0) = (0, 1, 0, 0)")
+    assert(toSignals(outs) === List(0, 1, 0, 0),  "1 demux (1, 0) = (0, 1, 0, 0)")
     
     in.setSignal(true)
     c0.setSignal(true)
     c1.setSignal(true)
     run
-    assert(toSignals(outs) === List(1, 1),  "1 demux (1, 1) = (1, 0, 0, 0)")
+    assert(toSignals(outs) === List(1, 0, 0, 0),  "1 demux (1, 1) = (1, 0, 0, 0)")
   }
 }
